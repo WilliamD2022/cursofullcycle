@@ -142,6 +142,10 @@ Se quiser remover também o volume do MySQL:
 docker-compose down -v
 
 
+
+
+
+
 🐳 Imagem no Docker Hub
 
 A imagem gerada e publicada está disponível em:
@@ -152,6 +156,16 @@ Para baixar e executar a imagem diretamente:
 
 docker pull willdomin/fullcycle-go:latest
 docker run --rm willdomin/fullcycle-go
+
+
+
+
+
+
+
+
+
+
 
 
 
