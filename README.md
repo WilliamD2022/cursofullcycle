@@ -141,6 +141,21 @@ Se quiser remover também o volume do MySQL:
 
 docker-compose down -v
 
+
+🐳 Imagem no Docker Hub
+
+A imagem gerada e publicada está disponível em:
+
+👉 https://hub.docker.com/repository/docker/willdomin/fullcycle-go/general
+
+Para baixar e executar a imagem diretamente:
+
+docker pull willdomin/fullcycle-go:latest
+docker run --rm willdomin/fullcycle-go
+
+
+
+
 📝 Boas Práticas Aplicadas
 
 Uso de variáveis padrão no Node.js para host/usuário/senha/banco.
