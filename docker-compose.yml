@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: fc-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: nodedb
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql-data:/var/lib/mysql
+    networks:
+      - fc-network
+
+  app:
+    build: ./node
+    container_name: fc-node
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: nodedb
+    volumes:
+      - ./node:/usr/src/app
+    networks:
+      - fc-network
+
+  nginx:
+    build: ./nginx
+    container_name: fc-nginx
+    restart: always
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+    networks:
+      - fc-network
+
+volumes:
+  mysql-data:
+
+networks:
+  fc-network:
+    driver: bridge
