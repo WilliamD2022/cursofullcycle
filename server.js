@@ -11,34 +11,43 @@ const dbConfig = {
   database: process.env.DB_NAME || 'fullcycle'
 };
 
-async function waitForDB(retries = 20, delayMs = 2000) {
-  while (retries > 0) {
-    try {
-      const conn = await mysql.createConnection(dbConfig);
-      await conn.execute('SELECT 1');
-      await conn.end();
-      console.log('✅ MySQL disponível!');
-      return;
-    } catch (err) {
-      console.log(`⏳ Aguardando MySQL... (${retries} tentativas restantes)`);
-      await new Promise(r => setTimeout(r, delayMs));
-      retries--;
-    }
-  }
-  throw new Error('MySQL não ficou disponível a tempo');
+async function getConnection() { return mysql.createConnection(dbConfig); }
+
+async function ensureSchema() {
+  const conn = await getConnection();
+  await conn.execute(`
+    CREATE TABLE IF NOT EXISTS people (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL
+    )
+  `);
+  await conn.end();
 }
 
-app.get('/', (_req, res) => {
-  res.send('FullCycle App rodando com dependência entre containers! 🚀');
+function randomName() {
+  const names = ['William', 'Alciane', 'Kiara', 'Nymeria', 'Full', 'Cycle', 'Rocks'];
+  return names[Math.floor(Math.random() * names.length)];
+}
+
+app.get('/', async (_req, res) => {
+  try {
+    await ensureSchema();
+    const conn = await getConnection();
+
+    const name = randomName();
+    await conn.execute('INSERT INTO people (name) VALUES (?)', [name]);
+
+    const [rows] = await conn.execute('SELECT name FROM people ORDER BY id DESC');
+    await conn.end();
+
+    const list = rows.map(r => `<li>${r.name}</li>`).join('');
+    const html = `<h1>Full Cycle Rocks!</h1><ul>${list}</ul>`;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.status(200).send(html);
+  } catch (err) {
+    console.error('Erro no handler /:', err);
+    res.status(500).send('<h1>Erro interno no servidor</h1>');
+  }
 });
 
-waitForDB()
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`🔥 App ouvindo na porta ${port}`);
-    });
-  })
-  .catch((err) => {
-    console.error('❌ Erro ao iniciar app:', err.message);
-    process.exit(1);
-  });
+app.listen(port, () => console.log(`🔥 App ouvindo na porta ${port}`));

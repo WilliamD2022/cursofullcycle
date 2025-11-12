@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log
+Dockerfile~
+*.log
+.env
+.DS_Store
+.idea/
+.vscode/
+__pycache__/

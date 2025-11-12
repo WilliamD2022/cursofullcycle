@@ -5,8 +5,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: fullcycle
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -16,7 +14,6 @@ services:
       retries: 10
 
   app:
-    # constrói a imagem localmente a partir do Dockerfile neste diretório
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,14 +30,17 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+    volumes:
+      - ./:/usr/src/app              # código do host
+      - /usr/src/app/node_modules    # <— volume anônimo p/ NÃO sobrescrever deps
 
   nginx:
     image: nginx:alpine
     container_name: fc-nginx
-    ports:
-      - "8080:80"
     depends_on:
       - app
+    ports:
+      - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
 
